@@ -11,6 +11,7 @@ class HadithReaderScreen extends StatelessWidget {
     super.key,
     required this.topic,
     this.isPremium = false,
+    required String title,
   });
 
   @override
@@ -24,9 +25,7 @@ class HadithReaderScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(topic),
-      ),
+      appBar: AppBar(title: Text(topic)),
       body: PremiumGuard(
         premiumChild: ListView.builder(
           itemCount: hadithList.length,

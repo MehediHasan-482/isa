@@ -5,7 +5,7 @@
     <application
         android:label="isa"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@drawable/quran">
         <activity
             android:name=".MainActivity"
             android:exported="true"

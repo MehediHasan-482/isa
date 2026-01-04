@@ -1,67 +1,83 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/app_provider.dart';
+import '../../../core/localization/app_localization.dart';
 import '../../../widgets/premium_guard.dart';
 
-class HistoryReaderScreen extends StatelessWidget {
-  final String title;
+class HadithReaderScreen extends StatelessWidget {
+  final String topic;
   final bool isPremium;
 
-  const HistoryReaderScreen({
+  const HadithReaderScreen({
     super.key,
-    required this.title,
+    required this.topic,
     this.isPremium = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final appProvider = context.watch<AppProvider>();
+    final locale = appProvider.locale.languageCode;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: PremiumGuard(
-        premiumChild: Padding(
-          padding: const EdgeInsets.all(16),
-          child: SingleChildScrollView(
-            child: Text(
-              '''
-$title
+    // Placeholder hadith list
+    final hadithList = List.generate(
+      5,
+      (index) => 'Hadith ${index + 1}: Authentic narration text...',
+    );
 
-This is a detailed Islamic historical article.
-Here you can include:
-• Timeline
-• Events
-• Key figures
-• Lessons from history
+    return Directionality(
+      textDirection: locale == 'ar' ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        appBar: AppBar(title: Text(topic)),
+        body: PremiumGuard(
+          premiumChild: ListView.builder(
+            itemCount: hadithList.length,
+            itemBuilder: (context, index) {
+              final hadith = hadithList[index];
 
-(Placeholder content – will be replaced by real data / PDF / API)
-''',
-              style: const TextStyle(fontSize: 16, height: 1.6),
-            ),
+              return Card(
+                margin: const EdgeInsets.all(8),
+                child: ListTile(
+                  title: Text(hadith),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.bookmark_border),
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Bookmarked Hadith ${index + 1}'),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
           ),
-        ),
-        lockedChild: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.lock, size: 60, color: Colors.grey),
-              const SizedBox(height: 16),
-              const Text(
-                'This detailed history is Premium',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: () {
-                  // Dummy premium unlock
-                  appProvider.updatePremiumStatus(true);
-                },
-                child: const Text('Unlock Premium'),
-              ),
-            ],
+          lockedChild: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  AppLocalization.of(
+                    context,
+                  ).translate('premium_hadith'), // localized text
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: () {
+                    appProvider.updatePremiumStatus(true);
+                  },
+                  child: Text(
+                    AppLocalization.of(context).translate('unlock_premium'),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
