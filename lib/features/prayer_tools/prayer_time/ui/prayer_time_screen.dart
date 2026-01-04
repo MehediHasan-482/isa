@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, unnecessary_underscores
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../provider/prayer_time_provider.dart';
@@ -42,8 +44,7 @@ class _PrayerTimeScreenState extends State<PrayerTimeScreen> {
               return Card(
                 child: ListTile(
                   title: Text(prayer),
-                  trailing:
-                      Text(provider.getFormattedTime(prayer)),
+                  trailing: Text(provider.getFormattedTime(prayer)),
                 ),
               );
             }).toList(),

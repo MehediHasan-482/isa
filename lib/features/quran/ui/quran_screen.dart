@@ -8,7 +8,7 @@ class QuranScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appProvider = context.watch<AppProvider>();
+    context.watch<AppProvider>();
 
     // Placeholder Surah List
     final surahList = List.generate(114, (index) => 'Surah ${index + 1}');

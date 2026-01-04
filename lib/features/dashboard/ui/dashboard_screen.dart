@@ -15,11 +15,9 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final appProvider = Provider.of<AppProvider>(context);
 
-    String dropdownValue = 'Dashboard';
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ISA – Islamic Assistant'),
+        title: const Text('ISA - Islamic Assistant'),
         actions: [
           /// Premium / Free Status Dropdown
           DropdownButton<String>(
