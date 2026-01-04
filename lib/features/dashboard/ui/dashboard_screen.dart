@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:isa/features/ai_assistant/ui/ai_chat_screen.dart';
 import 'package:isa/features/hadith/ui/hadith_screen.dart';
 import 'package:isa/features/history/ui/history_screen.dart';
+import 'package:isa/features/prayer_tools/prayer_tools_screen.dart';
 import 'package:isa/features/quran/ui/quran_screen.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/app_provider.dart';
@@ -19,11 +20,10 @@ class DashboardScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('ISA - Islamic Assistant'),
         actions: [
-          /// Premium / Free Status Dropdown
           DropdownButton<String>(
-            dropdownColor: Colors.white,
+            dropdownColor: Theme.of(context).cardColor,
             underline: const SizedBox(),
-            icon: const Icon(Icons.menu, color: Colors.white),
+            icon: Icon(Icons.menu, color: Theme.of(context).iconTheme.color),
             items:
                 <String>[
                   'Dashboard',
@@ -78,8 +78,15 @@ class DashboardScreen extends StatelessWidget {
                     MaterialPageRoute(builder: (_) => const AIChatScreen()),
                   );
                   break;
+                case 'Prayer Tools':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const PrayerToolsScreen(),
+                    ),
+                  );
+                  break;
                 default:
-                  // For other modules, just show SnackBar for now
                   ScaffoldMessenger.of(
                     context,
                   ).showSnackBar(SnackBar(content: Text('$newValue clicked')));

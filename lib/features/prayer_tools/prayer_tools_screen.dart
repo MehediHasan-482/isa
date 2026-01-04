@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:isa/features/prayer_tools/prayer_time/ui/prayer_time_screen.dart';
 import 'package:isa/features/prayer_tools/qibla/ui/qibla_screen.dart';
 import 'package:isa/features/prayer_tools/tasbeeh/ui/tasbeeh_screen.dart';
+import 'package:isa/features/prayer_tools/prayer_time/provider/prayer_time_provider.dart';
+import 'package:provider/provider.dart';
 
 class PrayerToolsScreen extends StatelessWidget {
   const PrayerToolsScreen({super.key});
@@ -9,9 +11,7 @@ class PrayerToolsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Prayer Tools'),
-      ),
+      appBar: AppBar(title: const Text('Prayer Tools')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: GridView.count(
@@ -26,7 +26,10 @@ class PrayerToolsScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const PrayerTimeScreen(),
+                    builder: (_) => ChangeNotifierProvider(
+                      create: (_) => PrayerTimeProvider(),
+                      child: const PrayerTimeScreen(),
+                    ),
                   ),
                 );
               },
@@ -37,9 +40,7 @@ class PrayerToolsScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const QiblaScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const QiblaScreen()),
                 );
               },
             ),
@@ -49,9 +50,7 @@ class PrayerToolsScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const TasbeehScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const TasbeehScreen()),
                 );
               },
             ),
@@ -88,10 +87,7 @@ class _ToolCard extends StatelessWidget {
           children: [
             Icon(icon, size: 40),
             const SizedBox(height: 12),
-            Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
           ],
         ),
       ),
