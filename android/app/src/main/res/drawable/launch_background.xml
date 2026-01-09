@@ -7,7 +7,7 @@
     <item>
         <bitmap
             android:gravity="center"
-            android:src="@drawable/quran_image" />
+            android:src="@drawable/quran" />
     </item>
 </layer-list>
 
