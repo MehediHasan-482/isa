@@ -5,7 +5,8 @@
     <application
         android:label="isa"
         android:name="${applicationName}"
-        android:icon="@drawable/quran">
+        android:icon="@drawable/quran"
+        android:enableOnBackInvokedCallback="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"

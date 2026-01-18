@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:isa/core/providers/feature_provider.dart';
 import 'package:isa/features/prayer_time/provider/prayer_time_provider.dart';
+import 'package:isa/features/qibla/provider/qibla_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app.dart';
@@ -27,6 +28,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => AppProvider()),
         ChangeNotifierProvider(create: (_) => PrayerTimeProvider()),
         ChangeNotifierProvider(create: (_) => FeaturesProvider()),
+        ChangeNotifierProvider(create: (_) => QiblaProvider()),
       ],
       child: ISAApp(isFirstTime: isFirstTime),
     ),

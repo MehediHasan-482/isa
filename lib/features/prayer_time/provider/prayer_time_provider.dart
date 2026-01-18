@@ -1,172 +1,147 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: deprecated_member_use, depend_on_referenced_packages
+
+import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart'; // GPS location
-// ignore: depend_on_referenced_packages
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'dart:async';
 
 class PrayerTimeProvider extends ChangeNotifier {
   String currentPrayerName = '';
   String currentPrayerTime = '';
+  String remainingTime = '';
   String hijriDate = '';
   String gregorianDate = '';
-  String nextPrayerName = '';
-  String remainingTime = '';
 
   Map<String, String> prayerTimes = {};
-
   Timer? _timer;
 
-  /// Load prayer times using current location
+  // ================= LOAD PRAYER TIMES =================
   Future<void> loadPrayerTimes() async {
     try {
-      // Get current location
-      Position position = await _determinePosition();
-      double lat = position.latitude;
-      double lon = position.longitude;
+      final position = await _determinePosition();
 
       final url = Uri.parse(
-        'https://api.aladhan.com/v1/timings?latitude=$lat&longitude=$lon&method=2',
+        'https://api.aladhan.com/v1/timings'
+        '?latitude=${position.latitude}'
+        '&longitude=${position.longitude}'
+        '&method=2',
       );
+
       final response = await http.get(url);
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final timings = Map<String, dynamic>.from(data['data']['timings']);
-        final date = data['data']['date'];
-
-        // Store all prayer times (only the 5 obligatory prayers)
-        prayerTimes = {
-          'Fajr': timings['Fajr'],
-          'Dhuhr': timings['Dhuhr'],
-          'Asr': timings['Asr'],
-          'Maghrib': timings['Maghrib'],
-          'Isha': timings['Isha'],
-        };
-
-        hijriDate =
-            "${date['hijri']['day']}-${date['hijri']['month']['en']}-${date['hijri']['year']}";
-        gregorianDate =
-            "${date['gregorian']['day']}-${date['gregorian']['month']['en']}-${date['gregorian']['year']}";
-        // Update current prayer immediately
-        _updateCurrentPrayer();
-
-        // Start countdown timer
-        _timer?.cancel();
-        _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-          _updateCurrentPrayer();
-        });
-
-        notifyListeners();
-      } else {
-        throw Exception('Failed to fetch prayer times');
+      if (response.statusCode != 200) {
+        throw Exception('Failed to load prayer times');
       }
+
+      final body = json.decode(response.body);
+      final timings = body['data']['timings'];
+      final date = body['data']['date'];
+
+      prayerTimes = {
+        'Fajr': timings['Fajr'],
+        'Sunrise': timings['Sunrise'],
+        'Dhuhr': timings['Dhuhr'],
+        'Asr': timings['Asr'],
+        'Maghrib': timings['Maghrib'],
+        'Isha': timings['Isha'],
+        'Midnight': timings['Midnight'],
+      };
+
+      hijriDate =
+          "${date['hijri']['day']} ${date['hijri']['month']['en']} ${date['hijri']['year']}";
+      gregorianDate =
+          "${date['gregorian']['day']} ${date['gregorian']['month']['en']} ${date['gregorian']['year']}";
+
+      _updateCurrentPrayer();
+
+      _timer?.cancel();
+      _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+        _updateCurrentPrayer();
+      });
+
+      notifyListeners();
     } catch (e) {
-      print('Error loading prayer times: $e');
+      debugPrint('PrayerTime error: $e');
     }
   }
 
+  // ================= UPDATE CURRENT PRAYER =================
   void _updateCurrentPrayer() {
     if (prayerTimes.isEmpty) return;
 
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
 
-    // Convert prayerTimes to DateTime objects
-    Map<String, DateTime> prayersDateTime = {};
-    prayerTimes.forEach((key, value) {
-      final parts = value.split(':');
-      int hour = int.parse(parts[0]);
-      int minute = int.parse(parts[1]);
-      prayersDateTime[key] = DateTime(
-        now.year,
-        now.month,
-        now.day,
-        hour,
-        minute,
+    DateTime parse(String t) {
+      final p = t.split(':');
+      return DateTime(
+        today.year,
+        today.month,
+        today.day,
+        int.parse(p[0]),
+        int.parse(p[1]),
       );
-    });
-
-    // The ordered list of prayers
-    List<String> order = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
-
-    String? currPrayer;
-    String? nextPrayer;
-    DateTime? nextPrayerTime;
-
-    for (int i = 0; i < order.length; i++) {
-      String prayer = order[i];
-      DateTime prayerTime = prayersDateTime[prayer]!;
-
-      if (i < order.length - 1) {
-        DateTime nextTime = prayersDateTime[order[i + 1]]!;
-        if (now.isAfter(prayerTime) && now.isBefore(nextTime)) {
-          currPrayer = prayer;
-          nextPrayer = order[i + 1];
-          nextPrayerTime = nextTime;
-          break;
-        }
-      } else {
-        // For Isha, next prayer is tomorrow Fajr
-        DateTime nextTime = prayersDateTime['Fajr']!.add(
-          const Duration(days: 1),
-        );
-        if (now.isAfter(prayerTime)) {
-          currPrayer = 'Isha';
-          nextPrayer = 'Fajr';
-          nextPrayerTime = nextTime;
-          break;
-        } else if (now.isBefore(prayerTime)) {
-          // before Isha
-          currPrayer = 'Maghrib';
-          nextPrayer = 'Isha';
-          nextPrayerTime = prayerTime;
-          break;
-        }
-      }
     }
 
-    // Update values
-    if (currPrayer != null && nextPrayerTime != null) {
-      currentPrayerName = currPrayer;
-      currentPrayerTime = prayerTimes[currPrayer]!;
-      nextPrayerName = nextPrayer!;
-      remainingTime = _formatDuration(nextPrayerTime.difference(now));
-      notifyListeners();
+    final fajr = parse(prayerTimes['Fajr']!);
+    final sunrise = parse(prayerTimes['Sunrise']!);
+    final dhuhr = parse(prayerTimes['Dhuhr']!);
+    final asr = parse(prayerTimes['Asr']!);
+    final maghrib = parse(prayerTimes['Maghrib']!);
+    final isha = parse(prayerTimes['Isha']!);
+
+    DateTime midnight = parse(prayerTimes['Midnight']!);
+    if (midnight.isBefore(isha)) {
+      midnight = midnight.add(const Duration(days: 1));
+    }
+
+    final prayerRanges = {
+      'Fajr': {'start': fajr, 'end': sunrise},
+      'Dhuhr': {'start': dhuhr, 'end': asr},
+      'Asr': {'start': asr, 'end': maghrib},
+      'Maghrib': {'start': maghrib, 'end': isha},
+      'Isha': {'start': isha, 'end': midnight},
+    };
+
+    for (final entry in prayerRanges.entries) {
+      final start = entry.value['start']!;
+      final end = entry.value['end']!;
+      if (now.isAfter(start) && now.isBefore(end)) {
+        currentPrayerName = entry.key;
+        currentPrayerTime = prayerTimes[entry.key]!;
+        remainingTime = _formatDuration(end.difference(now));
+        notifyListeners();
+        return;
+      }
     }
   }
 
-  String _formatDuration(Duration duration) {
-    int h = duration.inHours;
-    int m = duration.inMinutes % 60;
-    int s = duration.inSeconds % 60;
+  // ================= FORMAT TIME =================
+  String _formatDuration(Duration d) {
+    final h = d.inHours;
+    final m = d.inMinutes % 60;
+    final s = d.inSeconds % 60;
     return '${h}h ${m}m ${s}s';
   }
 
-  // Request location permission and get current position
+  // ================= LOCATION =================
   Future<Position> _determinePosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      throw Exception('Location services are disabled.');
+    if (!await Geolocator.isLocationServiceEnabled()) {
+      throw Exception('Location service disabled');
     }
 
-    permission = await Geolocator.checkPermission();
+    LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        throw Exception('Location permissions are denied.');
-      }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      throw Exception('Location permissions are permanently denied.');
+      throw Exception('Location permission denied forever');
     }
 
-    return await Geolocator.getCurrentPosition(
+    return Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
   }

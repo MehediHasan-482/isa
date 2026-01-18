@@ -16,8 +16,14 @@ class _QiblaScreenState extends State<QiblaScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      context.read<QiblaProvider>().updateLocation();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      try {
+        await context.read<QiblaProvider>().updateLocation();
+      } catch (e) {
+        print('Qibla update error: $e');
+      }
     });
   }
 
@@ -40,7 +46,7 @@ class _QiblaScreenState extends State<QiblaScreen> {
                   style: const TextStyle(color: Colors.white70),
                 ),
                 const SizedBox(height: 20),
-                LiveCompass(qiblaAngle: provider.qiblaAngle),
+                LiveCompass(qiblaAngle: provider.qiblaAngle, regionName: '',),
                 const SizedBox(height: 10),
                 Text(
                   'Qibla Angle: ${provider.qiblaAngle.toStringAsFixed(2)}°',
