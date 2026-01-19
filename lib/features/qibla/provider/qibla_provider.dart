@@ -1,26 +1,56 @@
 // ignore_for_file: deprecated_member_use
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart'; // <-- Add this
 import 'dart:math';
 
 class QiblaProvider extends ChangeNotifier {
   double qiblaAngle = 0.0; // angle to Kaaba
   Position? currentPosition;
+  String? address; // <-- address added
 
   /// Update current location and calculate Qibla angle
   Future<void> updateLocation() async {
     try {
       currentPosition = await _determinePosition();
+
       if (currentPosition != null) {
+        // Qibla angle
         qiblaAngle = _calculateQibla(
           currentPosition!.latitude,
           currentPosition!.longitude,
         );
+
+        // Reverse Geocoding for address
+        try {
+          List<Placemark> placemarks = await placemarkFromCoordinates(
+            currentPosition!.latitude,
+            currentPosition!.longitude,
+          );
+
+          if (placemarks.isNotEmpty) {
+            final place = placemarks.first;
+            address =
+                '${place.name ?? ''}, ${place.locality ?? ''}, ${place.administrativeArea ?? ''}, ${place.country ?? ''}';
+          } else {
+            address =
+                'Lat: ${currentPosition!.latitude.toStringAsFixed(4)}, Lng: ${currentPosition!.longitude.toStringAsFixed(4)}';
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            print('Error getting address: $e');
+          }
+          address =
+              'Lat: ${currentPosition!.latitude.toStringAsFixed(4)}, Lng: ${currentPosition!.longitude.toStringAsFixed(4)}';
+        }
+
         notifyListeners();
       }
     } catch (e) {
-      print('Error fetching location: $e');
+      if (kDebugMode) {
+        print('Error fetching location: $e');
+      }
     }
   }
 

@@ -20,6 +20,8 @@ class PrayerTimeProvider extends ChangeNotifier {
   // ================= LOAD PRAYER TIMES =================
   Future<void> loadPrayerTimes() async {
     try {
+      debugPrint(">>> loadPrayerTimes CALLED");
+
       final position = await _determinePosition();
 
       final url = Uri.parse(
@@ -30,6 +32,7 @@ class PrayerTimeProvider extends ChangeNotifier {
       );
 
       final response = await http.get(url);
+      debugPrint("API STATUS: ${response.statusCode}");
 
       if (response.statusCode != 200) {
         throw Exception('Failed to load prayer times');
@@ -49,6 +52,8 @@ class PrayerTimeProvider extends ChangeNotifier {
         'Midnight': timings['Midnight'],
       };
 
+      debugPrint("PRAYER TIMES FROM API: $prayerTimes");
+
       hijriDate =
           "${date['hijri']['day']} ${date['hijri']['month']['en']} ${date['hijri']['year']}";
       gregorianDate =
@@ -63,26 +68,37 @@ class PrayerTimeProvider extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('PrayerTime error: $e');
+      debugPrint('❌ PrayerTime error: $e');
     }
   }
 
   // ================= UPDATE CURRENT PRAYER =================
   void _updateCurrentPrayer() {
-    if (prayerTimes.isEmpty) return;
+    debugPrint(">>> _updateCurrentPrayer CALLED");
+    if (prayerTimes.isEmpty) {
+      // debugPrint("❌ prayerTimes EMPTY");
+      return;
+    }
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
     DateTime parse(String t) {
-      final p = t.split(':');
-      return DateTime(
-        today.year,
-        today.month,
-        today.day,
-        int.parse(p[0]),
-        int.parse(p[1]),
-      );
+      // debugPrint("RAW TIME FROM API: $t");
+
+      final cleanTime = t.split(' ').first; // removes (+06)
+      final p = cleanTime.split(':');
+
+      int hour = int.parse(p[0]);
+      int minute = int.parse(p[1]);
+
+      DateTime dt = DateTime(today.year, today.month, today.day, hour, minute);
+
+      // Midnight / after-midnight → next day
+      if (hour < 3) dt = dt.add(const Duration(days: 1));
+
+      // debugPrint("PARSED DATETIME: $dt");
+      return dt;
     }
 
     final fajr = parse(prayerTimes['Fajr']!);
@@ -91,11 +107,7 @@ class PrayerTimeProvider extends ChangeNotifier {
     final asr = parse(prayerTimes['Asr']!);
     final maghrib = parse(prayerTimes['Maghrib']!);
     final isha = parse(prayerTimes['Isha']!);
-
-    DateTime midnight = parse(prayerTimes['Midnight']!);
-    if (midnight.isBefore(isha)) {
-      midnight = midnight.add(const Duration(days: 1));
-    }
+    final midnight = parse(prayerTimes['Midnight']!);
 
     final prayerRanges = {
       'Fajr': {'start': fajr, 'end': sunrise},
@@ -105,17 +117,58 @@ class PrayerTimeProvider extends ChangeNotifier {
       'Isha': {'start': isha, 'end': midnight},
     };
 
+    bool matched = false;
+
+    // 1️⃣ Check if current prayer is active
     for (final entry in prayerRanges.entries) {
       final start = entry.value['start']!;
       final end = entry.value['end']!;
+
+      // debugPrint("CHECK ${entry.key} | now=$now | start=$start | end=$end");
+
       if (now.isAfter(start) && now.isBefore(end)) {
-        currentPrayerName = entry.key;
+        currentPrayerName = '${entry.key} ends in';
         currentPrayerTime = prayerTimes[entry.key]!;
         remainingTime = _formatDuration(end.difference(now));
-        notifyListeners();
-        return;
+
+        // debugPrint(
+        //   "✅ CURRENT PRAYER: $currentPrayerName | Remaining: $remainingTime",
+        // );
+
+        matched = true;
+        break;
       }
     }
+
+    // 2️⃣ If no current prayer → show next prayer countdown
+    if (!matched) {
+      for (final entry in prayerRanges.entries) {
+        final start = entry.value['start']!;
+        if (now.isBefore(start)) {
+          currentPrayerName = '${entry.key} start in';
+          currentPrayerTime = prayerTimes[entry.key]!;
+          remainingTime = _formatDuration(start.difference(now));
+
+          // debugPrint("⏭ NEXT PRAYER: $currentPrayerName | Remaining: $remainingTime",);
+          matched = true;
+          break;
+        }
+      }
+    }
+
+    // 3️⃣ If still no match (late night after Isha) → show Fajr next
+    if (!matched) {
+      final nextFajr = prayerRanges['Fajr']!['start']!.add(
+        const Duration(days: 1),
+      );
+      currentPrayerName = 'Fajr start in';
+      currentPrayerTime = prayerTimes['Fajr']!;
+      remainingTime = _formatDuration(nextFajr.difference(now));
+
+      // debugPrint("🌙 NIGHT → NEXT PRAYER: $currentPrayerName | Remaining: $remainingTime",);
+    }
+
+    notifyListeners();
   }
 
   // ================= FORMAT TIME =================

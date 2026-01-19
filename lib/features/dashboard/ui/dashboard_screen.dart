@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:isa/core/providers/feature_provider.dart';
 import 'package:isa/features/prayer_time/provider/prayer_time_provider.dart';
 import 'package:isa/features/qibla/ui/qibla_screen.dart';
+import 'package:isa/features/tasbeeh/ui/tasbeeh_screen.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/app_provider.dart';
 
@@ -128,7 +129,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            prayerProvider.currentPrayerName,
+            prayerProvider.currentPrayerName.substring(
+              0,
+              prayerProvider.currentPrayerName.length > 8
+                  ? prayerProvider.currentPrayerName.length - 8
+                  : 0,
+            ),
             style: const TextStyle(color: Colors.white70, fontSize: 18),
           ),
           Text(
@@ -163,7 +169,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    "${prayerProvider.currentPrayerName} ends in",
+                    "${prayerProvider.currentPrayerName} ",
                     style: const TextStyle(color: Colors.white60, fontSize: 12),
                   ),
                   Text(
@@ -263,12 +269,12 @@ class _FeatureItem extends StatelessWidget {
           //     MaterialPageRoute(builder: (_) => const HifzScreen()),
           //   );
           //   break;
-          // case 'Tasbeeh':
-          //   Navigator.push(
-          //     context,
-          //     MaterialPageRoute(builder: (_) => const TasbeehScreen()),
-          //   );
-          //   break;
+          case 'Tasbeeh':
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const TasbeehScreen()),
+            );
+            break;
           // case 'Learn Tajweed':
           //   Navigator.push(
           //     context,
