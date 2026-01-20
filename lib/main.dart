@@ -18,7 +18,7 @@ Future<void> main() async {
   assert(isTest = true); // test mode only
 
   final prefs = isTest
-      ? await SharedPreferences.getInstance() // in test this can be mocked
+      ? await SharedPreferences.getInstance()
       : await SharedPreferences.getInstance();
 
   final bool isFirstTime = prefs.getBool('isFirstTime') ?? true;
