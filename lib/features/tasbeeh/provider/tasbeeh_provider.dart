@@ -98,8 +98,9 @@ class TasbeehProvider extends ChangeNotifier {
     selectedTasbeeh = tasbeehList.first;
   }
 
-  void selectTasbeeh(String tasbeeh) {
+  void setTasbeehWithTarget(String tasbeeh, int userTarget) {
     selectedTasbeeh = tasbeeh;
+    target = userTarget; // user input number
     count = 0;
     notifyListeners();
   }

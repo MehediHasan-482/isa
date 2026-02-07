@@ -2,7 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart'; // <-- Add this
+import 'package:geocoding/geocoding.dart' as geo;
 import 'dart:math';
 
 class QiblaProvider extends ChangeNotifier {
@@ -24,7 +24,7 @@ class QiblaProvider extends ChangeNotifier {
 
         // Reverse Geocoding for address
         try {
-          List<Placemark> placemarks = await placemarkFromCoordinates(
+          List<geo.Placemark> placemarks = await geo.placemarkFromCoordinates(
             currentPosition!.latitude,
             currentPosition!.longitude,
           );
