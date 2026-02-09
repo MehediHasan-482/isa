@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:isa/core/providers/feature_provider.dart';
 import 'package:isa/features/allah_name/provider/allah_name_provider.dart';
+import 'package:isa/features/blog/provider/blog_provider.dart';
 import 'package:isa/features/prayer_time/provider/prayer_time_provider.dart';
 import 'package:isa/features/qibla/provider/qibla_provider.dart';
 import 'package:isa/features/quran/provider/quran_provider.dart';
@@ -14,10 +15,8 @@ import 'package:timezone/data/latest.dart' as tz;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   tz.initializeTimeZones();
-
-  // SharedPreferences initialization safe
   bool isTest = false;
-  assert(isTest = true); // test mode only
+  assert(isTest = true);
 
   final prefs = isTest
       ? await SharedPreferences.getInstance()
@@ -35,6 +34,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => TasbeehProvider()),
         ChangeNotifierProvider(create: (_) => AllahNameProvider()),
         ChangeNotifierProvider(create: (_) => QuranProvider()),
+        ChangeNotifierProvider(create: (_) => BlogProvider()),
       ],
       child: ISAApp(isFirstTime: isFirstTime),
     ),
