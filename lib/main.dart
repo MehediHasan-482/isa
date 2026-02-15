@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:isa/core/providers/feature_provider.dart';
 import 'package:isa/features/allah_name/provider/allah_name_provider.dart';
 import 'package:isa/features/blog/provider/blog_provider.dart';
+import 'package:isa/features/hifz/provider/hifz_provider.dart';
 import 'package:isa/features/prayer_time/provider/prayer_time_provider.dart';
 import 'package:isa/features/qibla/provider/qibla_provider.dart';
 import 'package:isa/features/quran/provider/quran_provider.dart';
@@ -35,6 +36,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => AllahNameProvider()),
         ChangeNotifierProvider(create: (_) => QuranProvider()),
         ChangeNotifierProvider(create: (_) => BlogProvider()),
+        ChangeNotifierProvider(create: (_) => HifzProvider()),
       ],
       child: ISAApp(isFirstTime: isFirstTime),
     ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:isa/core/providers/feature_provider.dart';
 import 'package:isa/features/allah_name/ui/allah_name__screen.dart';
 import 'package:isa/features/blog/ui/blog_screen.dart';
+import 'package:isa/features/hifz/ui/hifz_screen.dart';
 import 'package:isa/features/prayer_time/provider/prayer_time_provider.dart';
 import 'package:isa/features/qibla/ui/qibla_screen.dart';
 import 'package:isa/features/quran/ui/quran_screen.dart';
@@ -266,12 +267,12 @@ class _FeatureItem extends StatelessWidget {
               MaterialPageRoute(builder: (_) => const QuranReadScreen()),
             );
             break;
-          // case 'Hifz':
-          //   Navigator.push(
-          //     context,
-          //     MaterialPageRoute(builder: (_) => const HifzScreen()),
-          //   );
-          //   break;
+          case 'Hifz':
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const HifzScreen()),
+            );
+            break;
           case 'Tasbeeh':
             Navigator.push(
               context,

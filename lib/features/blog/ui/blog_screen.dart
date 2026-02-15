@@ -602,9 +602,6 @@ class _BlogHomePageState extends State<BlogHomePage> {
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 16),
-
                 // Title
                 Text(
                   title,
@@ -614,14 +611,8 @@ class _BlogHomePageState extends State<BlogHomePage> {
                     color: Colors.black87,
                   ),
                 ),
-
-                const SizedBox(height: 10),
-
                 // Content with See More/Less
                 _ContentPreview(content: content),
-
-                const SizedBox(height: 16),
-
                 // Action Buttons and Stats
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -654,7 +645,6 @@ class _BlogHomePageState extends State<BlogHomePage> {
                             ),
                           ],
                         ),
-                        const SizedBox(width: 15),
                         // Comment Button
                         Row(
                           children: [

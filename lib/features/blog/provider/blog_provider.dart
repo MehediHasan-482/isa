@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 
 class BlogProvider extends ChangeNotifier {
-  // Main Blog List (Mula Data)
   final List<Map<String, dynamic>> _blogs = [
     {
       'id': '1',
       'title': 'আর-রহমান নামের ফজিলত',
       'content': '''
 আর-রহমান আল্লাহ তায়ালার ৯৯টি সুন্দর নামের অন্যতম। এই নামের অর্থ “পরম করুণাময়”।
-
 ফজিলত:
 ১. আল্লাহর রহমত নাযিল হয়
 ২. অন্তর নরম হয়
@@ -79,43 +77,33 @@ Benefits:
     },
   ];
 
-  // UI-te dekhano hobe ai list ti
   List<Map<String, dynamic>> _filteredBlogs = [];
   String _searchQuery = '';
   String _selectedCategory = 'all';
 
   BlogProvider() {
-    // Shurutei sob blog load hobe
     _filteredBlogs = List.from(_blogs);
   }
 
-  // Getters
   List<Map<String, dynamic>> get blogs => _filteredBlogs;
   String get searchQuery => _searchQuery;
   String get selectedCategory => _selectedCategory;
 
-  // --- Methods ---
 
-  // Search Logic (Optimized)
   void searchBlogs(String query) {
     _searchQuery = query.trim();
     _applyFilters();
   }
 
-  // Category Filter Logic
   void filterByCategory(String category) {
     _selectedCategory = category;
     _applyFilters();
   }
 
-  // Combined Filter (Search + Category)
   void _applyFilters() {
     _filteredBlogs = _blogs.where((blog) {
-      // Category match check
       final matchesCategory =
           _selectedCategory == 'all' || blog['category'] == _selectedCategory;
-
-      // Search query match check
       final matchesSearch =
           _searchQuery.isEmpty ||
           blog['title'].toString().toLowerCase().contains(
@@ -134,12 +122,11 @@ Benefits:
     notifyListeners();
   }
 
-  // Like System (Local State Management)
   void likeBlog(String blogId) {
     final index = _blogs.indexWhere((b) => b['id'] == blogId);
     if (index != -1) {
       _blogs[index]['likes'] = (_blogs[index]['likes'] ?? 0) + 1;
-      _applyFilters(); // Filtered list update korbe
+      _applyFilters();
     }
   }
 
@@ -166,5 +153,40 @@ Benefits:
 
     _blogs.insert(0, fullBlog);
     _applyFilters();
+  }
+
+  Future<void> saveBlog(Map<String, dynamic> blogData) async {
+    try {
+      final index = _blogs.indexWhere((blog) => blog['id'] == blogData['id']);
+
+      if (index != -1) {
+        _blogs[index] = blogData;
+      } else {
+        _blogs.insert(0, blogData);
+      }
+
+      notifyListeners();
+
+    } catch (e) {
+      print('Error saving blog: $e');
+    }
+  }
+
+  Future<void> deleteBlog(String blogId) async {
+    try {
+      _blogs.removeWhere((blog) => blog['id'] == blogId);
+      notifyListeners();
+    } catch (e) {
+      print('Error deleting blog: $e');
+    }
+  }
+
+  // Add this method to get blog by ID
+  Map<String, dynamic>? getBlogById(String blogId) {
+    try {
+      return _blogs.firstWhere((blog) => blog['id'] == blogId);
+    } catch (e) {
+      return null;
+    }
   }
 }
