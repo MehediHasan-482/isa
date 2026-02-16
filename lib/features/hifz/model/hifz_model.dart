@@ -1,3 +1,8 @@
+// ignore_for_file: deprecated_member_use
+
+// ignore: unused_import
+import 'package:flutter/foundation.dart';
+
 class HifzEntry {
   final String id;
   final String surah;
@@ -9,6 +14,8 @@ class HifzEntry {
   final String? notes;
   final int rating; // 1-5 for how well memorized
   final bool isCompleted;
+  final DateTime? lastReviewedDate;
+  final int reviewCount;
 
   HifzEntry({
     required this.id,
@@ -21,6 +28,8 @@ class HifzEntry {
     this.notes,
     this.rating = 3,
     this.isCompleted = false,
+    this.lastReviewedDate,
+    this.reviewCount = 0,
   });
 
   // Helper method to get ayah range as string
@@ -28,6 +37,77 @@ class HifzEntry {
   
   // Calculate total ayahs memorized in this entry
   int get ayahCount => endAyah - startAyah + 1;
+
+  // Check if needs revision (based on rating and time)
+  bool get needsRevision => rating < 4 || 
+      (lastReviewedDate != null && 
+       DateTime.now().difference(lastReviewedDate!).inDays > 7);
+
+  HifzEntry copyWith({
+    String? id,
+    String? surah,
+    int? startAyah,
+    int? endAyah,
+    String? type,
+    DateTime? date,
+    int? totalAyahs,
+    String? notes,
+    int? rating,
+    bool? isCompleted,
+    DateTime? lastReviewedDate,
+    int? reviewCount,
+  }) {
+    return HifzEntry(
+      id: id ?? this.id,
+      surah: surah ?? this.surah,
+      startAyah: startAyah ?? this.startAyah,
+      endAyah: endAyah ?? this.endAyah,
+      type: type ?? this.type,
+      date: date ?? this.date,
+      totalAyahs: totalAyahs ?? this.totalAyahs,
+      notes: notes ?? this.notes,
+      rating: rating ?? this.rating,
+      isCompleted: isCompleted ?? this.isCompleted,
+      lastReviewedDate: lastReviewedDate ?? this.lastReviewedDate,
+      reviewCount: reviewCount ?? this.reviewCount,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'surah': surah,
+      'startAyah': startAyah,
+      'endAyah': endAyah,
+      'type': type,
+      'date': date.toIso8601String(),
+      'totalAyahs': totalAyahs,
+      'notes': notes,
+      'rating': rating,
+      'isCompleted': isCompleted,
+      'lastReviewedDate': lastReviewedDate?.toIso8601String(),
+      'reviewCount': reviewCount,
+    };
+  }
+
+  factory HifzEntry.fromJson(Map<String, dynamic> json) {
+    return HifzEntry(
+      id: json['id'],
+      surah: json['surah'],
+      startAyah: json['startAyah'],
+      endAyah: json['endAyah'],
+      type: json['type'],
+      date: DateTime.parse(json['date']),
+      totalAyahs: json['totalAyahs'],
+      notes: json['notes'],
+      rating: json['rating'],
+      isCompleted: json['isCompleted'],
+      lastReviewedDate: json['lastReviewedDate'] != null 
+          ? DateTime.parse(json['lastReviewedDate']) 
+          : null,
+      reviewCount: json['reviewCount'] ?? 0,
+    );
+  }
 }
 
 // Surah list with ayah counts
@@ -148,4 +228,11 @@ class SurahData {
     "Al-Falaq": 5,
     "An-Nas": 6,
   };
+
+  static List<String> get surahNames => surahAyahCount.keys.toList();
+  
+  // Fixed: This method was missing
+  static int getAyahCount(String surah) {
+    return surahAyahCount[surah] ?? 0;
+  }
 }
